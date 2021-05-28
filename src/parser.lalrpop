@@ -1,0 +1,40 @@
+use std::str::FromStr;
+use chrono::NaiveDate;
+use crate::commands::Command;
+
+grammar;
+
+pub FullCommand: Command ={
+    r"#.*" => Command::NOP,
+    () => Command::NOP,
+    <Command> r"#.*",
+    <Command>
+}
+pub Command: Command = {
+    "set" "problem" "goal" <Num> => Command::SetProblemGoal(<>),
+    "set" "penalty" <Num> => Command::SetPenalty(<>),
+    "begin" <y:Num> "-" <m:Num> "-" <d:Num> => Command::BeginDate(NaiveDate::from_ymd(y as i32,m,d)),
+    "begin" "chapter" <Num> => Command::BeginChapter(<>),
+    "assigned" <Num> ProblemUnit => Command::AssignedAmount(<>),
+    "finished" <Num> ProblemUnit => Command::FinishedAmount(<>),
+    "add" <ProblemList> => Command::AddProblems(<>),
+    "need" "to" "fix" <ProblemList> => Command::NeedToFix(<>),
+    "fixed" <ProblemList> => Command::Fixed(<>),
+    "penalty" => Command::Penalty,
+}
+
+pub ProblemUnit={
+    "problem",
+    "problems",
+}
+pub ProblemList: Vec<u32> = {
+    Range,
+    <mut a:Range> "," <b:ProblemList> => {a.extend(b); a}
+};
+
+Range: Vec<u32> = {
+    Num => vec![<>],
+    <start:Num> "-" <end:Num> => (start..=end).collect()
+}
+
+Num: u32 = r"\d+" => u32::from_str(<>).unwrap();

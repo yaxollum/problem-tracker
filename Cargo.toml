@@ -1,0 +1,13 @@
+[package]
+name = "problem-tracker"
+version = "0.1.0"
+edition = "2018"
+build = "build.rs" # LALRPOP preprocessing
+
+[dependencies]
+lalrpop-util = "0.19.5"
+regex = "1"
+chrono = "0.4.19"
+
+[build-dependencies]
+lalrpop = "0.19.5"
