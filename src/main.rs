@@ -8,7 +8,6 @@ extern crate lalrpop_util;
 
 lalrpop_mod!(pub parser); // synthesized by LALRPOP
 
-use commands::Command;
 use interpreter::Interpreter;
 use std::io;
 use std::io::prelude::*;
@@ -34,7 +33,7 @@ fn main() {
     }
     if !terminated {
         match exec.report() {
-            Ok(report) => println!("{:?}", report),
+            Ok(report) => println!("{:#?}", report),
             Err(msg) => println!("{}", msg),
         }
     } else {

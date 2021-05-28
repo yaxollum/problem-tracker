@@ -4,13 +4,14 @@ use super::report::Report;
 use chrono::NaiveDate;
 use std::cmp;
 
+#[derive(Debug)]
 struct DailyInformation {
     date: NaiveDate,
     assigned: u32,
     penalty: bool,
 }
 
-#[derive(Default)]
+#[derive(Default, Debug)]
 struct Problems {
     data: Vec<Problem>,
     solved_used_end_index: usize,
@@ -26,7 +27,7 @@ impl Problems {
     }
     pub fn finished(&mut self, n: u32) -> Result<(), &str> {
         let n = n as usize;
-        if self.solved_not_used_end_index + n < self.data.len() {
+        if self.solved_not_used_end_index + n <= self.data.len() {
             self.solved_not_used_end_index += n;
             Ok(())
         } else {
@@ -59,7 +60,7 @@ impl Problems {
     }
 }
 
-#[derive(Default)]
+#[derive(Default, Debug)]
 pub struct Interpreter {
     problem_goal: Option<u32>,
     penalty: Option<u32>,
@@ -88,7 +89,7 @@ impl Interpreter {
                     self.problems.unsolved_iter().cloned().collect();
                 let total_solved = self.problems.total_solved();
                 let total_remaining =
-                    problem_goal + total_penalty - total_solved - total_need_to_fix;
+                    problem_goal + total_penalty - total_solved + total_need_to_fix;
                 let assigned = current_date.assigned;
                 let assigned_problems_completion = (
                     cmp::min(self.problems.total_solved_not_used(), assigned),
@@ -110,7 +111,7 @@ impl Interpreter {
             Err("Cannot generate report without setting problem goal.")
         }
     }
-    pub fn next_command(&mut self, cmd: Command) -> Result<(), &str> {
+    pub fn next_command(&mut self, cmd: Command) -> Result<(), String> {
         match cmd {
             Command::SetProblemGoal(n) => {
                 self.problem_goal = Some(n);
@@ -119,7 +120,8 @@ impl Interpreter {
                 self.penalty = Some(n);
             }
             Command::BeginDate(date) => {
-                self.process_current_date();
+                self.process_current_date()?;
+
                 self.current_date = Some(DailyInformation {
                     date: date,
                     assigned: 0,
@@ -133,11 +135,11 @@ impl Interpreter {
                 if let Some(current_date) = &mut self.current_date {
                     current_date.assigned += n;
                 } else {
-                    return Err("Cannot assign problems without setting date.");
+                    return Err("Cannot assign problems without setting date.".to_owned());
                 }
             }
             Command::FinishedAmount(n) => {
-                self.problems.finished(n);
+                self.problems.finished(n)?;
             }
             Command::AddProblems(list) => {
                 if let Some(current_chapter) = self.current_chapter {
@@ -148,20 +150,20 @@ impl Interpreter {
                             need_to_fix: false,
                         }));
                 } else {
-                    return Err("Cannot add problems without beginning chapter.");
+                    return Err("Cannot add problems without beginning chapter.".to_owned());
                 }
             }
             Command::NeedToFix(list) => {
-                self.change_need_to_fix_status(list, true);
+                self.change_need_to_fix_status(list, true)?;
             }
             Command::Fixed(list) => {
-                self.change_need_to_fix_status(list, false);
+                self.change_need_to_fix_status(list, false)?;
             }
             Command::Penalty => {
                 if let Some(current_date) = &mut self.current_date {
                     current_date.penalty = true;
                 } else {
-                    return Err("Cannot have penalty without setting date.");
+                    return Err("Cannot have penalty without setting date.".to_owned());
                 }
             }
             Command::NOP => {}
@@ -223,6 +225,16 @@ impl Interpreter {
                             problem, new_status_str
                         ));
                     }
+                } else {
+                    return Err(format!(
+                        "{} not found in solved problems; cannot mark as \"{}\"",
+                        Problem {
+                            number: problem_number,
+                            chapter: current_chapter,
+                            need_to_fix: false
+                        },
+                        new_status_str
+                    ));
                 }
             }
         } else {
