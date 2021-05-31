@@ -33,7 +33,7 @@ fn main() {
     }
     if !terminated {
         match exec.report() {
-            Ok(report) => println!("{:#?}", report),
+            Ok(report) => println!("{}", report),
             Err(msg) => println!("{}", msg),
         }
     } else {
