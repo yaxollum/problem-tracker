@@ -121,6 +121,9 @@ impl Interpreter {
             }
             Command::BeginDate(date) => {
                 self.process_current_date()?;
+                if !self.check_next_date_contiguous(&date) {
+                    return Err("Date is not contiguous.".to_owned());
+                }
 
                 self.current_date = Some(DailyInformation {
                     date: date,
@@ -179,6 +182,13 @@ impl Interpreter {
         I: Iterator<Item = &'a mut Problem>,
     {
         problem_list.find(|p| p.number == problem_number && p.chapter == chapter)
+    }
+    fn check_next_date_contiguous(&self, date: &NaiveDate) -> bool {
+        if let Some(current_date) = &self.current_date {
+            date == &current_date.date.succ()
+        } else {
+            true
+        }
     }
     fn process_current_date(&mut self) -> Result<(), String> {
         if let Some(current_date) = &self.current_date {
