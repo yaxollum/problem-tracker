@@ -200,6 +200,13 @@ impl Interpreter {
                         current_date.date
                     ));
                 }
+            } else {
+                if current_date.penalty {
+                    return Err(format!(
+                        "Unexpected \"penalty\" command; assigned work was completed on {}",
+                        current_date.date
+                    ));
+                }
             }
         }
         Ok(())
