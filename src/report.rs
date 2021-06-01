@@ -9,16 +9,24 @@ pub struct Report {
     pub total_need_to_fix: u32,
     pub unsolved_problems: Vec<Problem>,
     pub need_to_fix_problems: Vec<Problem>,
-    pub assigned_problems_completion: (u32, u32),
+    pub assigned_problems_are_completed: bool,
+    pub assigned: u32,
+    pub total_solved_not_used: u32,
 }
 
 impl fmt::Display for Report {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         writeln!(
             f,
-            "Assigned Problems Completion: {} out of {}\n",
-            self.assigned_problems_completion.0, self.assigned_problems_completion.1
+            "Assigned: {} ({})",
+            self.assigned,
+            if self.assigned_problems_are_completed {
+                "COMPLETED"
+            } else {
+                "NOT COMPLETED"
+            }
         )?;
+        writeln!(f, "Total Solved Not Used: {}\n", self.total_solved_not_used)?;
         writeln!(f, "Total Remaining: {}", self.total_remaining)?;
         writeln!(f, "Total Solved: {}", self.total_solved)?;
         writeln!(f, "Total Penalty: {}", self.total_penalty)?;

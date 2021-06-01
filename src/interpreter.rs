@@ -2,7 +2,6 @@ use super::commands::Command;
 use super::problem::Problem;
 use super::report::Report;
 use chrono::NaiveDate;
-use std::cmp;
 
 #[derive(Debug)]
 struct DailyInformation {
@@ -91,10 +90,8 @@ impl Interpreter {
                 let total_remaining =
                     problem_goal + total_penalty - total_solved + total_need_to_fix;
                 let assigned = current_date.assigned;
-                let assigned_problems_completion = (
-                    cmp::min(self.problems.total_solved_not_used(), assigned),
-                    assigned,
-                );
+                let total_solved_not_used = self.problems.total_solved_not_used();
+                let assigned_problems_are_completed = assigned <= total_solved_not_used;
                 Ok(Report {
                     total_remaining,
                     total_solved,
@@ -102,7 +99,9 @@ impl Interpreter {
                     total_need_to_fix,
                     unsolved_problems,
                     need_to_fix_problems,
-                    assigned_problems_completion,
+                    assigned,
+                    assigned_problems_are_completed,
+                    total_solved_not_used,
                 })
             } else {
                 Err("Cannot generate report without beginning date.")
