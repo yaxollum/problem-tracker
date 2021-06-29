@@ -16,27 +16,23 @@ fn main() {
     let stdin = io::stdin();
     let mut exec = Interpreter::default();
 
-    let mut terminated = false;
     for (line, line_num) in stdin.lock().lines().zip(1..) {
         let line = line.unwrap();
         if let Ok(cmd) = parser::FullCommandParser::new().parse(&line) {
             if let Err(msg) = exec.next_command(cmd) {
-                println!("Line {}: {}", line_num, msg);
-                terminated = true;
-                break;
+                eprintln!("Line {}: {}", line_num, msg);
+                std::process::exit(1);
             }
         } else {
-            println!("Could not parse line {}: \"{}\"", line_num, line);
-            terminated = true;
-            break;
+            eprintln!("Could not parse line {}: \"{}\"", line_num, line);
+            std::process::exit(1);
         }
     }
-    if !terminated {
-        match exec.report() {
-            Ok(report) => println!("{}", report),
-            Err(msg) => println!("{}", msg),
+    match exec.report() {
+        Ok(report) => println!("{}", report),
+        Err(msg) => {
+            eprintln!("{}", msg);
+            std::process::exit(1);
         }
-    } else {
-        println!("Terminated.");
     }
 }
