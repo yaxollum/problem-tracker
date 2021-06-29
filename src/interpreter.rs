@@ -1,4 +1,7 @@
+mod test;
+
 use super::commands::Command;
+use super::error::InterpreterError;
 use super::problem::Problem;
 use super::report::Report;
 use chrono::NaiveDate;
@@ -110,7 +113,7 @@ impl Interpreter {
             Err("Cannot generate report without setting problem goal.")
         }
     }
-    pub fn next_command(&mut self, cmd: Command) -> Result<(), String> {
+    pub fn next_command(&mut self, cmd: Command) -> Result<(), InterpreterError> {
         match cmd {
             Command::SetProblemGoal(n) => {
                 self.problem_goal = Some(n);
@@ -121,7 +124,7 @@ impl Interpreter {
             Command::BeginDate(date) => {
                 self.process_current_date()?;
                 if !self.check_next_date_contiguous(&date) {
-                    return Err("Date is not contiguous.".to_owned());
+                    return Err(InterpreterError::DateNotContiguous);
                 }
 
                 self.current_date = Some(DailyInformation {
@@ -190,7 +193,7 @@ impl Interpreter {
             true
         }
     }
-    fn process_current_date(&mut self) -> Result<(), String> {
+    fn process_current_date(&mut self) -> Result<(), InterpreterError> {
         if let Some(current_date) = &self.current_date {
             let enough_problems_to_use = self.problems.use_problems(current_date.assigned);
 
