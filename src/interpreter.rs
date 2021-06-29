@@ -168,6 +168,7 @@ impl Interpreter {
                     return Err("Cannot have penalty without setting date.".to_owned());
                 }
             }
+            Command::ResetRemaining => {}
             Command::NOP => {}
         }
         Ok(())

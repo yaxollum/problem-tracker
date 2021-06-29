@@ -21,6 +21,7 @@ pub Command: Command = {
     "need" "to" "fix" <ProblemList> => Command::NeedToFix(<>),
     "fixed" <ProblemList> => Command::Fixed(<>),
     "penalty" => Command::Penalty,
+    "reset" "remaining" => Command::ResetRemaining,
 }
 
 pub ProblemUnit={

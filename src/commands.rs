@@ -12,5 +12,6 @@ pub enum Command {
     NeedToFix(Vec<u32>),
     Fixed(Vec<u32>),
     Penalty,
+    ResetRemaining,
     NOP,
 }
