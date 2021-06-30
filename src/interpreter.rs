@@ -27,7 +27,7 @@ impl Problems {
     {
         self.data.extend(list);
     }
-    pub fn finished(&mut self, n: u32) -> Result<(), &str> {
+    pub fn finished(&mut self, n: u32) -> Result<(), InterpreterError> {
         let n = n as usize;
         if self.solved_not_used_end_index + n <= self.data.len() {
             self.solved_not_used_end_index += n;
@@ -140,7 +140,7 @@ impl Interpreter {
                 if let Some(current_date) = &mut self.current_date {
                     current_date.assigned += n;
                 } else {
-                    return Err("Cannot assign problems without setting date.".to_owned());
+                    return Err(InterpreterError::AssignProblemsNoDate);
                 }
             }
             Command::FinishedAmount(n) => {
