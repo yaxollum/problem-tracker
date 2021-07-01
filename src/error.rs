@@ -19,7 +19,7 @@ pub enum InterpreterError {
 
 impl fmt::Display for InterpreterError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        writeln!(
+        write!(
             f,
             "{}",
             match self {
@@ -43,13 +43,13 @@ impl fmt::Display for InterpreterError {
                     date
                 ),
                 Self::FixStatusNotChanged(problem, status) =>
-                    format!("{} already has status \"{}\".", problem, status),
+                    format!("{} already has status {}.", problem, status),
                 Self::FixStatusProblemNotFound(problem, status) => format!(
-                    "{} not found in solved problems; cannot mark as \"{}\"",
+                    "{} not found in solved problems; cannot mark as {}",
                     problem, status
                 ),
                 Self::FixStatusWithoutChapter(status) => format!(
-                    "Cannot mark problems as \"{}\" without beginning chapter.",
+                    "Cannot mark problems as {} without beginning chapter.",
                     status
                 ),
             }
