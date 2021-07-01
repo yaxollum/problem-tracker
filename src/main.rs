@@ -1,4 +1,5 @@
 mod commands;
+mod error;
 mod interpreter;
 mod problem;
 mod report;
