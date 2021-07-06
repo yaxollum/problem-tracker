@@ -2,7 +2,7 @@ use super::problem::{FixStatus, Problem};
 use chrono::NaiveDate;
 use std::fmt;
 
-#[derive(Debug)]
+#[derive(Debug, Eq, PartialEq)]
 pub enum InterpreterError {
     DateNotContiguous,
     AssignProblemsNoDate,

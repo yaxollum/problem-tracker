@@ -7,7 +7,7 @@ use super::problem::{FixStatus, Problem};
 use super::report::Report;
 use chrono::NaiveDate;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 struct DailyInformation {
     date: NaiveDate,
     assigned: u32,
