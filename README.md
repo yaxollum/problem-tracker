@@ -24,6 +24,8 @@ begin chapter <Num>
 assigned <Num> ProblemUnit
 finished <Num> ProblemUnit
 add <ProblemList>
+add even <ProblemList>
+add odd <ProblemList>
 need to fix <ProblemList>
 fixed <ProblemList>
 penalty

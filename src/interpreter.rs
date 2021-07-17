@@ -159,6 +159,16 @@ impl Interpreter {
                     return Err(InterpreterError::AddProblemsWithoutChapter);
                 }
             }
+            Command::AddEvenProblems(list) => {
+                self.next_command(Command::AddProblems(
+                    list.iter().cloned().filter(|x| x % 2 == 0).collect(),
+                ))?;
+            }
+            Command::AddOddProblems(list) => {
+                self.next_command(Command::AddProblems(
+                    list.iter().cloned().filter(|x| x % 2 == 1).collect(),
+                ))?;
+            }
             Command::NeedToFix(list) => {
                 self.change_need_to_fix_status(list, FixStatus::NeedToFix)?;
             }

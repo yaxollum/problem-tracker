@@ -76,3 +76,23 @@ fn test_cmd_assigned_amount_no_date() -> Result<(), InterpreterError> {
     );
     Ok(())
 }
+
+#[test]
+fn test_cmd_add_even_problems() -> Result<(), InterpreterError> {
+    let mut exec = Interpreter::default();
+    exec.next_command(Command::BeginChapter(8))?;
+    exec.next_command(Command::AddEvenProblems((1..=6).collect()))?;
+    let unsolved: Vec<u32> = exec.problems.unsolved_iter().map(|p| p.number).collect();
+    assert_eq!(unsolved, vec![2, 4, 6]);
+    Ok(())
+}
+
+#[test]
+fn test_cmd_add_odd_problems() -> Result<(), InterpreterError> {
+    let mut exec = Interpreter::default();
+    exec.next_command(Command::BeginChapter(8))?;
+    exec.next_command(Command::AddOddProblems((1..=6).collect()))?;
+    let unsolved: Vec<u32> = exec.problems.unsolved_iter().map(|p| p.number).collect();
+    assert_eq!(unsolved, vec![1, 3, 5]);
+    Ok(())
+}
