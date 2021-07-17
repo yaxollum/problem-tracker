@@ -29,6 +29,7 @@ add odd <ProblemList>
 need to fix <ProblemList>
 fixed <ProblemList>
 penalty
+reset remaining
 ```
 
 `Num` is a non-negative integer
