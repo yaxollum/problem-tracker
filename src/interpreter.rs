@@ -6,6 +6,7 @@ use super::error::InterpreterError;
 use super::problem::{FixStatus, Problem};
 use super::report::Report;
 use chrono::NaiveDate;
+use std::collections::VecDeque;
 
 #[derive(Debug, Clone)]
 struct DailyInformation {
@@ -16,9 +17,10 @@ struct DailyInformation {
 
 #[derive(Default, Debug)]
 struct Problems {
-    data: Vec<Problem>,
-    solved_used_end_index: usize,
-    solved_not_used_end_index: usize,
+    unsolved: VecDeque<Problem>,
+    solved_not_used: VecDeque<Problem>,
+    solved_used: VecDeque<Problem>,
+    solved_before_reset: Vec<Problem>,
 }
 
 impl Problems {
@@ -26,40 +28,55 @@ impl Problems {
     where
         I: Iterator<Item = Problem>,
     {
-        self.data.extend(list);
+        self.unsolved.extend(list);
     }
     pub fn finished(&mut self, n: u32) -> Result<(), InterpreterError> {
         let n = n as usize;
-        if self.solved_not_used_end_index + n <= self.data.len() {
-            self.solved_not_used_end_index += n;
+        if n <= self.unsolved.len() {
+            self.solved_not_used.extend(self.unsolved.drain(..n));
             Ok(())
         } else {
             Err(InterpreterError::NotEnoughProblems)
         }
     }
-    pub fn solved_iter_mut(&mut self) -> std::iter::Take<std::slice::IterMut<Problem>> {
-        self.data.iter_mut().take(self.solved_not_used_end_index)
+    pub fn solved_iter_mut(
+        &mut self,
+    ) -> std::iter::Chain<
+        std::collections::vec_deque::IterMut<Problem>,
+        std::collections::vec_deque::IterMut<Problem>,
+    > {
+        self.solved_used
+            .iter_mut()
+            .chain(self.solved_not_used.iter_mut())
     }
-    pub fn solved_iter(&self) -> std::iter::Take<std::slice::Iter<Problem>> {
-        self.data.iter().take(self.solved_not_used_end_index)
-    }
-    pub fn unsolved_iter(&self) -> std::iter::Skip<std::slice::Iter<Problem>> {
-        self.data.iter().skip(self.solved_not_used_end_index)
+
+    pub fn solved_iter(
+        &self,
+    ) -> std::iter::Chain<
+        std::collections::vec_deque::Iter<Problem>,
+        std::collections::vec_deque::Iter<Problem>,
+    > {
+        self.solved_used.iter().chain(self.solved_not_used.iter())
     }
     pub fn use_problems(&mut self, n: u32) -> bool {
         let n = n as usize;
-        if self.solved_used_end_index + n <= self.solved_not_used_end_index {
-            self.solved_used_end_index += n;
+        if n <= self.solved_not_used.len() {
+            self.solved_used.extend(self.solved_not_used.drain(..n));
             true
         } else {
             false
         }
     }
     pub fn total_solved(&self) -> u32 {
-        self.solved_not_used_end_index as u32
+        (self.solved_not_used.len() + self.solved_used.len()) as u32
     }
     pub fn total_solved_not_used(&self) -> u32 {
-        (self.solved_not_used_end_index - self.solved_used_end_index) as u32
+        self.solved_not_used.len() as u32
+    }
+    pub fn reset_remaining(&mut self) {
+        self.solved_before_reset.extend(self.solved_used.drain(..));
+        self.solved_before_reset
+            .extend(self.solved_not_used.drain(..));
     }
 }
 
@@ -89,7 +106,7 @@ impl Interpreter {
                     .collect();
                 let total_need_to_fix = need_to_fix_problems.len() as u32;
                 let unsolved_problems: Vec<Problem> =
-                    self.problems.unsolved_iter().cloned().collect();
+                    self.problems.unsolved.iter().cloned().collect();
                 let total_solved = self.problems.total_solved();
                 let total_remaining =
                     problem_goal + total_penalty - total_solved + total_need_to_fix;
@@ -182,7 +199,10 @@ impl Interpreter {
                     return Err(InterpreterError::PenaltyNoDate);
                 }
             }
-            Command::ResetRemaining => {}
+            Command::ResetRemaining => {
+                self.total_penalty = 0;
+                self.problems.reset_remaining();
+            }
             Command::NOP => {}
         }
         Ok(())

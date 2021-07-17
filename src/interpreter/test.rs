@@ -77,13 +77,17 @@ fn test_cmd_assigned_amount_no_date() -> Result<(), InterpreterError> {
     Ok(())
 }
 
+fn check_unsolved_numbers(exec: &Interpreter, expected_numbers: Vec<u32>) {
+    let unsolved: Vec<u32> = exec.problems.unsolved.iter().map(|p| p.number).collect();
+    assert_eq!(unsolved, expected_numbers);
+}
+
 #[test]
 fn test_cmd_add_problems() -> Result<(), InterpreterError> {
     let mut exec = Interpreter::default();
     exec.next_command(Command::BeginChapter(8))?;
     exec.next_command(Command::AddProblems((1..=6).collect()))?;
-    let unsolved: Vec<u32> = exec.problems.unsolved_iter().map(|p| p.number).collect();
-    assert_eq!(unsolved, vec![1, 2, 3, 4, 5, 6]);
+    check_unsolved_numbers(&exec, vec![1, 2, 3, 4, 5, 6]);
     Ok(())
 }
 
@@ -92,8 +96,7 @@ fn test_cmd_add_even_problems() -> Result<(), InterpreterError> {
     let mut exec = Interpreter::default();
     exec.next_command(Command::BeginChapter(8))?;
     exec.next_command(Command::AddEvenProblems((1..=6).collect()))?;
-    let unsolved: Vec<u32> = exec.problems.unsolved_iter().map(|p| p.number).collect();
-    assert_eq!(unsolved, vec![2, 4, 6]);
+    check_unsolved_numbers(&exec, vec![2, 4, 6]);
     Ok(())
 }
 
@@ -102,7 +105,6 @@ fn test_cmd_add_odd_problems() -> Result<(), InterpreterError> {
     let mut exec = Interpreter::default();
     exec.next_command(Command::BeginChapter(8))?;
     exec.next_command(Command::AddOddProblems((1..=6).collect()))?;
-    let unsolved: Vec<u32> = exec.problems.unsolved_iter().map(|p| p.number).collect();
-    assert_eq!(unsolved, vec![1, 3, 5]);
+    check_unsolved_numbers(&exec, vec![1, 3, 5]);
     Ok(())
 }
