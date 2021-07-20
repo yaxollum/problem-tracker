@@ -40,7 +40,7 @@ reset remaining
 
 ### Comments
 
-Problem-tracker also supports coomments. Comments begin with a `#` character and continue to the end of the line. For example:
+Problem-tracker also supports comments. Comments begin with a `#` character and continue to the end of the line. For example:
 
 ```
 set problem goal 400 # This is a comment
