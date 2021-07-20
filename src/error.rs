@@ -1,4 +1,4 @@
-use super::problem::{FixStatus, Problem};
+use super::problem::{FixStatus, ProblemID};
 use chrono::NaiveDate;
 use std::fmt;
 
@@ -8,12 +8,13 @@ pub enum InterpreterError {
     AssignProblemsNoDate,
     NotEnoughProblems,
     AddProblemsWithoutChapter,
+    DuplicateProblemAdded(ProblemID),
     PenaltyNoDate,
     PenaltyNotSet(NaiveDate),
     MissingPenalty(NaiveDate),
     UnexpectedPenalty(NaiveDate),
-    FixStatusNotChanged(Problem, FixStatus),
-    FixStatusProblemNotFound(Problem, FixStatus),
+    FixStatusNotChanged(ProblemID, FixStatus),
+    FixStatusProblemNotFound(ProblemID, FixStatus),
     FixStatusWithoutChapter(FixStatus),
 }
 
@@ -29,6 +30,8 @@ impl fmt::Display for InterpreterError {
                 Self::NotEnoughProblems => "Not enough problems to finish.".to_owned(),
                 Self::AddProblemsWithoutChapter =>
                     "Cannot add problems without beginning chapter.".to_owned(),
+                Self::DuplicateProblemAdded(problem) =>
+                    format!("{} has already been added previously.", problem),
                 Self::PenaltyNoDate => "Cannot have penalty without setting date.".to_owned(),
                 Self::PenaltyNotSet(date) => format!(
                     "Penalty not set; assigned work was not completed on {}",

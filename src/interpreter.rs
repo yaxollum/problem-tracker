@@ -3,10 +3,10 @@ mod test;
 
 use super::commands::Command;
 use super::error::InterpreterError;
-use super::problem::{FixStatus, Problem};
+use super::problem::{FixStatus, Problem, ProblemID};
 use super::report::Report;
 use chrono::NaiveDate;
-use std::collections::VecDeque;
+use std::collections::{HashSet, VecDeque};
 
 #[derive(Debug, Clone)]
 struct DailyInformation {
@@ -17,23 +17,33 @@ struct DailyInformation {
 
 #[derive(Default, Debug)]
 struct Problems {
-    unsolved: VecDeque<Problem>,
+    unsolved: VecDeque<ProblemID>,
     solved_not_used: VecDeque<Problem>,
     solved_used: VecDeque<Problem>,
     solved_before_reset: Vec<Problem>,
+    all_added: HashSet<ProblemID>,
 }
 
 impl Problems {
-    pub fn add<I>(&mut self, list: I)
-    where
-        I: Iterator<Item = Problem>,
-    {
-        self.unsolved.extend(list);
+    pub fn add<I: Iterator<Item = ProblemID>>(&mut self, list: I) -> Result<(), InterpreterError> {
+        for problem in list {
+            if !self.all_added.contains(&problem) {
+                self.all_added.insert(problem.clone());
+                self.unsolved.push_back(problem);
+            } else {
+                return Err(InterpreterError::DuplicateProblemAdded(problem));
+            }
+        }
+        Ok(())
     }
     pub fn finished(&mut self, n: u32) -> Result<(), InterpreterError> {
         let n = n as usize;
         if n <= self.unsolved.len() {
-            self.solved_not_used.extend(self.unsolved.drain(..n));
+            self.solved_not_used
+                .extend(self.unsolved.drain(..n).map(|id| Problem {
+                    id,
+                    fix_status: FixStatus::Fixed,
+                }));
             Ok(())
         } else {
             Err(InterpreterError::NotEnoughProblems)
@@ -98,14 +108,14 @@ impl Interpreter {
             if let Some(current_date) = &self.current_date {
                 let total_penalty = self.total_penalty;
 
-                let need_to_fix_problems: Vec<Problem> = self
+                let need_to_fix_problems: Vec<ProblemID> = self
                     .problems
                     .solved_iter()
                     .filter(|p| p.fix_status == FixStatus::NeedToFix)
-                    .cloned()
+                    .map(|p| p.id.clone())
                     .collect();
                 let total_need_to_fix = need_to_fix_problems.len() as u32;
-                let unsolved_problems: Vec<Problem> =
+                let unsolved_problems: Vec<ProblemID> =
                     self.problems.unsolved.iter().cloned().collect();
                 let total_solved = self.problems.total_solved();
                 let total_remaining =
@@ -167,11 +177,10 @@ impl Interpreter {
             Command::AddProblems(list) => {
                 if let Some(current_chapter) = self.current_chapter {
                     self.problems
-                        .add(list.iter().map(|&problem_number| Problem {
+                        .add(list.iter().map(|&problem_number| ProblemID {
                             number: problem_number,
                             chapter: current_chapter,
-                            fix_status: FixStatus::Fixed,
-                        }));
+                        }))?;
                 } else {
                     return Err(InterpreterError::AddProblemsWithoutChapter);
                 }
@@ -215,7 +224,7 @@ impl Interpreter {
     where
         I: Iterator<Item = &'a mut Problem>,
     {
-        problem_list.find(|p| p.number == problem_number && p.chapter == chapter)
+        problem_list.find(|p| p.id.number == problem_number && p.id.chapter == chapter)
     }
     fn check_next_date_contiguous(&self, date: &NaiveDate) -> bool {
         if let Some(current_date) = &self.current_date {
@@ -262,16 +271,15 @@ impl Interpreter {
                         problem.fix_status = new_status;
                     } else {
                         return Err(InterpreterError::FixStatusNotChanged(
-                            problem.clone(),
+                            problem.id.clone(),
                             new_status,
                         ));
                     }
                 } else {
                     return Err(InterpreterError::FixStatusProblemNotFound(
-                        Problem {
+                        ProblemID {
                             number: problem_number,
                             chapter: current_chapter,
-                            fix_status: FixStatus::Fixed,
                         },
                         new_status,
                     ));

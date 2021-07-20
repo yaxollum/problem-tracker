@@ -1,4 +1,4 @@
-use super::problem::Problem;
+use super::problem::ProblemID;
 use std::fmt;
 
 #[derive(Debug)]
@@ -7,8 +7,8 @@ pub struct Report {
     pub total_solved: u32,
     pub total_penalty: u32,
     pub total_need_to_fix: u32,
-    pub unsolved_problems: Vec<Problem>,
-    pub need_to_fix_problems: Vec<Problem>,
+    pub unsolved_problems: Vec<ProblemID>,
+    pub need_to_fix_problems: Vec<ProblemID>,
     pub assigned_problems_are_completed: bool,
     pub assigned: u32,
     pub total_solved_not_used: u32,

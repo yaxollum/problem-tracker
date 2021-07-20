@@ -108,3 +108,19 @@ fn test_cmd_add_odd_problems() -> Result<(), InterpreterError> {
     check_unsolved_numbers(&exec, vec![1, 3, 5]);
     Ok(())
 }
+
+#[test]
+fn test_cmd_add_duplicate_problem() -> Result<(), InterpreterError> {
+    let mut exec = Interpreter::default();
+    exec.next_command(Command::BeginChapter(8))?;
+    exec.next_command(Command::AddProblems((1..=6).collect()))?;
+    assert_eq!(
+        exec.next_command(Command::AddProblems(vec![5]))
+            .unwrap_err(),
+        InterpreterError::DuplicateProblemAdded(ProblemID {
+            number: 5,
+            chapter: 8,
+        })
+    );
+    Ok(())
+}
