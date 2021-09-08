@@ -174,8 +174,21 @@ impl Interpreter {
             Command::FinishedAmount(n) => {
                 self.problems.finished(n)?;
             }
-            Command::AddProblems(list) => {
+            Command::AddProblems(mut list, skip) => {
                 if let Some(current_chapter) = self.current_chapter {
+                    if let Some(skip) = skip {
+                        for problem in skip {
+                            let problem_pos = list.iter().position(|p| *p == problem);
+                            match problem_pos {
+                                Some(problem_pos) => {
+                                    list.remove(problem_pos);
+                                }
+                                None => {
+                                    return Err(InterpreterError::UnexpectedSkipProblem(problem));
+                                }
+                            }
+                        }
+                    }
                     self.problems
                         .add(list.iter().map(|&problem_number| ProblemID {
                             number: problem_number,
@@ -185,14 +198,16 @@ impl Interpreter {
                     return Err(InterpreterError::AddProblemsWithoutChapter);
                 }
             }
-            Command::AddEvenProblems(list) => {
+            Command::AddEvenProblems(list, skip) => {
                 self.next_command(Command::AddProblems(
                     list.iter().cloned().filter(|x| x % 2 == 0).collect(),
+                    skip,
                 ))?;
             }
-            Command::AddOddProblems(list) => {
+            Command::AddOddProblems(list, skip) => {
                 self.next_command(Command::AddProblems(
                     list.iter().cloned().filter(|x| x % 2 == 1).collect(),
+                    skip,
                 ))?;
             }
             Command::NeedToFix(list) => {

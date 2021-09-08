@@ -16,6 +16,7 @@ pub enum InterpreterError {
     FixStatusNotChanged(ProblemID, FixStatus),
     FixStatusProblemNotFound(ProblemID, FixStatus),
     FixStatusWithoutChapter(FixStatus),
+    UnexpectedSkipProblem(u32),
 }
 
 impl fmt::Display for InterpreterError {
@@ -55,6 +56,9 @@ impl fmt::Display for InterpreterError {
                     "Cannot mark problems as {} without beginning chapter.",
                     status
                 ),
+                Self::UnexpectedSkipProblem(num) => {
+                    format!("Unexpected skip: problem {}. Only problems within the same \"add\" statement can be skipped.",num)
+                }
             }
         )?;
         Ok(())

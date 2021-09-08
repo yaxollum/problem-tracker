@@ -86,7 +86,7 @@ fn check_unsolved_numbers(exec: &Interpreter, expected_numbers: Vec<u32>) {
 fn test_cmd_add_problems() -> Result<(), InterpreterError> {
     let mut exec = Interpreter::default();
     exec.next_command(Command::BeginChapter(8))?;
-    exec.next_command(Command::AddProblems((1..=6).collect()))?;
+    exec.next_command(Command::AddProblems((1..=6).collect(), None))?;
     check_unsolved_numbers(&exec, vec![1, 2, 3, 4, 5, 6]);
     Ok(())
 }
@@ -95,7 +95,7 @@ fn test_cmd_add_problems() -> Result<(), InterpreterError> {
 fn test_cmd_add_even_problems() -> Result<(), InterpreterError> {
     let mut exec = Interpreter::default();
     exec.next_command(Command::BeginChapter(8))?;
-    exec.next_command(Command::AddEvenProblems((1..=6).collect()))?;
+    exec.next_command(Command::AddEvenProblems((1..=6).collect(), None))?;
     check_unsolved_numbers(&exec, vec![2, 4, 6]);
     Ok(())
 }
@@ -104,7 +104,7 @@ fn test_cmd_add_even_problems() -> Result<(), InterpreterError> {
 fn test_cmd_add_odd_problems() -> Result<(), InterpreterError> {
     let mut exec = Interpreter::default();
     exec.next_command(Command::BeginChapter(8))?;
-    exec.next_command(Command::AddOddProblems((1..=6).collect()))?;
+    exec.next_command(Command::AddOddProblems((1..=6).collect(), None))?;
     check_unsolved_numbers(&exec, vec![1, 3, 5]);
     Ok(())
 }
@@ -113,9 +113,9 @@ fn test_cmd_add_odd_problems() -> Result<(), InterpreterError> {
 fn test_cmd_add_duplicate_problem() -> Result<(), InterpreterError> {
     let mut exec = Interpreter::default();
     exec.next_command(Command::BeginChapter(8))?;
-    exec.next_command(Command::AddProblems((1..=6).collect()))?;
+    exec.next_command(Command::AddProblems((1..=6).collect(), None))?;
     assert_eq!(
-        exec.next_command(Command::AddProblems(vec![5]))
+        exec.next_command(Command::AddProblems(vec![5], None))
             .unwrap_err(),
         InterpreterError::DuplicateProblemAdded(ProblemID {
             number: 5,
